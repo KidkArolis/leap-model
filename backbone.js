@@ -1,10 +1,3 @@
-//     Backbone.js 1.1.2
-
-//     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-//     Backbone may be freely distributed under the MIT license.
-//     For all details and documentation:
-//     http://backbonejs.org
-
 (function(root, factory) {
 
   // Set up Backbone appropriately for the environment. Start with AMD.
@@ -12,7 +5,7 @@
     define(['underscore', 'exports'], function(_, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
-      root.Backbone = factory(root, exports, _);
+      root.SuchModel = factory(root, exports, _);
     });
 
   // Next for Node.js or CommonJS.
@@ -22,33 +15,19 @@
 
   // Finally, as a browser global.
   } else {
-    root.Backbone = factory(root, {}, root._);
+    root.SuchModel = factory(root, {}, root._);
   }
 
-}(this, function(root, Backbone, _) {
+}(this, function(root, SuchModel, _) {
 
   // Initial Setup
   // -------------
-
-  // Save the previous value of the `Backbone` variable, so that it can be
-  // restored later on, if `noConflict` is used.
-  var previousBackbone = root.Backbone;
 
   // Create local references to array methods we'll want to use later.
   var array = [];
   var slice = array.slice;
 
-  // Current version of the library. Keep in sync with `package.json`.
-  Backbone.VERSION = '1.1.2';
-
-  // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
-  // to its previous owner. Returns a reference to this Backbone object.
-  Backbone.noConflict = function() {
-    root.Backbone = previousBackbone;
-    return this;
-  };
-
-  // Backbone.Events
+  // Events
   // ---------------
 
   // A module that can be mixed in to *any object* in order to provide it with
@@ -57,11 +36,11 @@
   // succession.
   //
   //     var object = {};
-  //     _.extend(object, Backbone.Events);
+  //     _.extend(object, Events);
   //     object.on('expand', function(){ alert('expanded'); });
   //     object.trigger('expand');
   //
-  var Events = Backbone.Events = {
+  var Events = {
 
     // Bind an event to a `callback` function. Passing `"all"` will bind
     // the callback to all events fired.
@@ -238,15 +217,7 @@
     }
   };
 
-  // Aliases for backwards compatibility.
-  Events.bind   = Events.on;
-  Events.unbind = Events.off;
-
-  // Allow the `Backbone` object to serve as a global event bus, for folks who
-  // want global "pubsub" in a convenient place.
-  _.extend(Backbone, Events);
-
-  // Backbone.Model
+  // Model
   // --------------
 
   // Backbone **Models** are the basic data object in the framework --
@@ -256,7 +227,7 @@
 
   // Create a new model with the specified attributes. A client id (`cid`)
   // is automatically generated and assigned for you.
-  var Model = Backbone.Model = function(attributes, options) {
+  var Model = function(attributes, options) {
     var attrs = attributes || {};
     options || (options = {});
     this.cid = _.uniqueId('c');
@@ -287,13 +258,15 @@
 
     // Return a copy of the model's `attributes` object.
     toJSON: function(options) {
-      return _.clone(this.attributes);
+      return _.deepClone(this.attributes);
     },
 
-    // Get the value of an attribute.
+    // Override get
+    // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
     get: function(attr) {
-      return this.attributes[attr];
+        return _.deepClone(getNested(this.attributes, attr));
     },
+
 
     // Get the HTML-escaped value of an attribute.
     escape: function(attr) {
@@ -424,7 +397,7 @@
     // Get all of the attributes of the model at the time of the previous
     // `"change"` event.
     previousAttributes: function() {
-      return _.clone(this._previousAttributes);
+      return _.deepClone(this._previousAttributes);
     },
 
     // Create a new model with identical attributes to this one.
@@ -497,6 +470,45 @@
   // Set up inheritance for the model, collection, router, view and history.
   Model.extend  = extend;
 
-  return Backbone;
+  Model.Events = Events;
+
+  return Model;
+
+
+  /**
+   * @param {Object}  Object to fetch attribute from
+   * @param {String}  Object path e.g. 'user.name'
+   * @return {Mixed}
+   */
+  function getNested(obj, path, return_exists) {
+      var separator = ".";
+
+      var fields = path ? path.split(separator) : [];
+      var result = obj;
+      return_exists || (return_exists === false);
+      for (var i = 0, n = fields.length; i < n; i++) {
+          if (return_exists && !_.has(result, fields[i])) {
+              return false;
+          }
+          result = result[fields[i]];
+
+          if (result == null && i < n - 1) {
+              result = {};
+          }
+
+          if (typeof result === 'undefined') {
+              if (return_exists)
+              {
+                  return true;
+              }
+              return result;
+          }
+      }
+      if (return_exists)
+      {
+          return true;
+      }
+      return result;
+  }
 
 }));

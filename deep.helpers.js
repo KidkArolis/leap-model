@@ -3,7 +3,7 @@
  *
  * Based on https://gist.github.com/echong/3861963
  */
-(function(_, Backbone) {
+(function(_, SuchModel) {
   var arrays, basicObjects, deepClone, deepExtend, deepExtendCouple, isBasicObject,
     __slice = [].slice;
 
@@ -12,7 +12,7 @@
     if (!_.isObject(obj) || _.isFunction(obj)) {
       return obj;
     }
-    if (obj instanceof Backbone.Model) {
+    if (obj instanceof SuchModel) {
       return obj;
     }
     if (_.isElement(obj)) {
@@ -109,4 +109,4 @@
     deepExtend: deepExtend
   });
 
-}).call(this, _, Backbone);
+}).call(this, _, SuchModel);

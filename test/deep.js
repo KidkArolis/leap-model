@@ -1,3 +1,7 @@
+var Backbone = {};
+Backbone.Model = SuchModel;
+Backbone.DeepModel = SuchModel.DeepModel;
+
 module("DeepModel");
 
 function create() {
@@ -199,7 +203,7 @@ test("set: Triggers model change:[attribute] events", function() {
 
         var triggered = false;
 
-        model.bind('change:id', function(model, val) {
+        model.on('change:id', function(model, val) {
             equal(val, 456);
 
             triggered = true;
@@ -224,7 +228,7 @@ test("set: Triggers model change:[attribute] events", function() {
             triggered1 = true;
         });
 
-        model.bind('change:user.name.last', function(model, val) {
+        model.on('change:user.name.last', function(model, val) {
             equal(val, 'Kang');
 
             triggered2 = true;
@@ -247,7 +251,7 @@ test("set: Triggers model change:[attribute] events", function() {
 
         var triggeredEvents = [];
 
-        model.bind('all', function(changedAttr, model, val) {
+        model.on('all', function(changedAttr, model, val) {
             triggeredEvents.push(changedAttr);
         });
 
@@ -282,13 +286,13 @@ test("set: Correct values passed to wildcard event handlers", function() {
         triggered1 = true;
     });
 
-    model.bind('change:user.name.*', function(model, val) {
+    model.on('change:user.name.*', function(model, val) {
         deepEqual(val, { first: 'Lana', last: 'Archer' } );
 
         triggered2 = true;
     });
 
-    model.bind('change:user.*', function(model, val) {
+    model.on('change:user.*', function(model, val) {
         deepEqual(val, { name: { first: 'Lana', last: 'Archer' }, type: 'Spy' });
 
         triggered3 = true;
@@ -329,7 +333,7 @@ test("set: options are passed to the change:[attribute] callback", function() {
 
         var triggered = false;
 
-        model.bind('change:id', function(model, val, options) {
+        model.on('change:id', function(model, val, options) {
             equal(val, 456);
 
             equal(options.owner, 'Jane Doe');
@@ -355,7 +359,7 @@ test("set: options are passed to the change:[attribute] callback", function() {
             triggered1 = true;
         });
 
-        model.bind('change:user.name.last', function(model, val, options) {
+        model.on('change:user.name.last', function(model, val, options) {
             equal(val, 'Kang');
 
             equal(options.changeid, 872);
@@ -455,7 +459,7 @@ test("unset: Triggers model change:[attribute] events", function() {
 
         var triggered = false;
 
-        model.bind('change:id', function(model, val) {
+        model.on('change:id', function(model, val) {
             equal(val, void 0);
             triggered = true;
         });
@@ -472,7 +476,7 @@ test("unset: Triggers model change:[attribute] events", function() {
 
         var triggered1 = false;
 
-        model.bind('change:user.name.first', function(model, val) {
+        model.on('change:user.name.first', function(model, val) {
             equal(val, void 0);
 
             triggered1 = true;
@@ -491,7 +495,7 @@ test("unset: Triggers model change:[attribute] events", function() {
 
         var triggeredEvents = [];
 
-        model.bind('all', function(changedAttr, model, val) {
+        model.on('all', function(changedAttr, model, val) {
             triggeredEvents.push(changedAttr);
         });
 
@@ -771,7 +775,7 @@ test("set: Trigger change events only once", function() {
 
         var triggeredEvents = [];
 
-        model.bind('all', function(changedAttr, model, val) {
+        model.on('all', function(changedAttr, model, val) {
             triggeredEvents.push(changedAttr);
         });
 

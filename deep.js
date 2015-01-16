@@ -5,15 +5,15 @@
 ;(function(factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD
-        define(['underscore', 'backbone'], factory);
+        define(['underscore', 'such-model'], factory);
     } else if (typeof exports === 'object') {
         // CommonJS
-        module.exports = factory(require('underscore'), require('backbone'));
+        module.exports = factory(require('underscore'), require('such-model'));
     } else {
         // globals
-        factory(_, Backbone);
+        factory(_, SuchModel);
     }
-}(function(_, Backbone) {
+}(function(_, SuchModel) {
 
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
@@ -121,7 +121,7 @@
       setNested(obj, path, null, { unset: true });
     }
 
-    var DeepModel = Backbone.Model.extend({
+    var DeepModel = SuchModel.extend({
 
         // Override constructor
         // Support having nested defaults by using _.deepExtend instead of _.extend
@@ -141,17 +141,6 @@
             this.set(attrs, options);
             this.changed = {};
             this.initialize.apply(this, arguments);
-        },
-
-        // Return a copy of the model's `attributes` object.
-        toJSON: function(options) {
-          return _.deepClone(this.attributes);
-        },
-
-        // Override get
-        // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
-        get: function(attr) {
-            return _.deepClone(getNested(this.attributes, attr));
         },
 
         // Override set
@@ -309,14 +298,6 @@
           //<custom code>
           return getNested(this._previousAttributes, attr);
           //</custom code>
-        },
-
-        // Get all of the attributes of the model at the time of the previous
-        // `"change"` event.
-        previousAttributes: function() {
-          //<custom code>
-          return _.deepClone(this._previousAttributes);
-          //</custom code>
         }
     });
 
@@ -326,11 +307,11 @@
 
 
     //Exports
-    Backbone.DeepModel = DeepModel;
+    SuchModel.DeepModel = DeepModel;
 
     //For use in NodeJS
     if (typeof module != 'undefined') module.exports = DeepModel;
 
-    return Backbone;
+    return SuchModel;
 
 }));

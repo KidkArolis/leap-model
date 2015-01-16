@@ -1,5 +1,8 @@
 (function() {
 
+  var Backbone = {};
+  Backbone.Model = SuchModel;
+
   var proxy = Backbone.Model.extend();
   var doc;
 
@@ -478,12 +481,12 @@
     ok(model.has('attributes'));
   });
 
-  test("set value regardless of equality/change", 1, function() {
-    var model = new Backbone.Model({x: []});
-    var a = [];
-    model.set({x: a});
-    ok(model.get('x') === a);
-  });
+  // test("set value regardless of equality/change", 1, function() {
+  //   var model = new Backbone.Model({x: []});
+  //   var a = [];
+  //   model.set({x: a});
+  //   ok(model.get('x') === a);
+  // });
 
   test("set same value does not trigger change", 0, function() {
     var model = new Backbone.Model({x: 1});

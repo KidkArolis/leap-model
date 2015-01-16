@@ -1,5 +1,8 @@
 (function() {
 
+  var Backbone = {};
+  Backbone.Events = SuchModel.Events;
+
   module("Backbone.Events");
 
   test("on and trigger", 2, function() {
@@ -480,10 +483,6 @@
     obj.trigger('event');
   });
 
-  test("Backbone object inherits Events", function() {
-    ok(Backbone.on === Backbone.Events.on);
-  });
-
   asyncTest("once with asynchronous events", 1, function() {
     var func = _.debounce(function() { ok(true); start(); }, 50);
     var obj = _.extend({}, Backbone.Events).once('async', func);
@@ -507,14 +506,6 @@
 
     obj.trigger('event');
     obj.trigger('event');
-  });
-
-  test("`once` on `all` should work as expected", 1, function() {
-    Backbone.once('all', function() {
-      ok(true);
-      Backbone.trigger('all');
-    });
-    Backbone.trigger('all');
   });
 
   test("once without a callback is a noop", 0, function() {

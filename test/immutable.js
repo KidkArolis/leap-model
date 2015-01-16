@@ -1,7 +1,7 @@
 module("Immutability");
 
 function create() {
-    var model = new Backbone.DeepModel({
+    var model = new SuchModel.DeepModel({
         id: 123,
         user: {
             type: 'Spy',
@@ -50,6 +50,8 @@ test("set: deep clones attributes before setting to the model", function() {
 
     model.set('user', nextUser);
 
+    notEqual(model.get('user'), nextUser);
+
     // attempt to pollute the model
     // by modifying values after setting on the model
     nextUser.type = 'Secretary';
@@ -63,6 +65,17 @@ test("set: deep clones attributes before setting to the model", function() {
             last: 'Kane'
         }
     });
+});
+
+test("toJSON: deep clones attributes before returning", function() {
+    var model = create();
+
+    var modelJSON = model.toJSON();
+
+    // attempt to pollute the model
+    modelJSON.user.type = 'Secretary';
+
+    deepEqual(model.get('user.type'), 'Spy');
 });
 
 // - @restorer
