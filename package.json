@@ -3,20 +3,27 @@
   "version": "1.0.0",
   "description": "A Backbone inspired (and semi compatible) model",
   "url": "http://backbonejs.org",
-  "keywords": ["model", "backbone", "server", "client", "browser", "observable"],
+  "keywords": [
+    "model",
+    "backbone",
+    "server",
+    "client",
+    "browser",
+    "observable"
+  ],
   "author": "Karolis Narkevicius <karolis.n@gmail.com>",
   "dependencies": {
+    "backbone-events-standalone": "^0.2.4",
     "underscore": ">=1.6.0"
   },
   "devDependencies": {
     "phantomjs": "1.9.7-8"
   },
-  "main": "backbone.js",
+  "main": "deep.js",
   "scripts": {
     "test": "phantomjs test/vendor/runner.js test/index.html?noglobals=true",
     "lint": "jsl -nofilelisting -nologo -conf docs/jsl.conf -process backbone.js"
   },
-  "main": "deep.js",
   "license": "MIT",
   "repository": {
     "type": "git",
