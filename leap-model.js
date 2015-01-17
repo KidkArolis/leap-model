@@ -1,150 +1,18 @@
-var keyPathSeparator = '.';
+(function (define) { 'use strict';
+define(function (require) {
 
-/**
- * Takes a nested object and returns a shallow object keyed with the path names
- * e.g. { "level1.level2": "value" }
- *
- * @param  {Object}      Nested object e.g. { level1: { level2: 'value' } }
- * @return {Object}      Shallow object with path names e.g. { 'level1.level2': 'value' }
- */
-function objToPaths(obj) {
-  var ret = {},
-      separator = keyPathSeparator;
+  var BackboneEvents = require("backbone-events-standalone");
+  var _ = require("underscore");
+  var __ = require("./lib/deep-helpers");
+  var nested = require("./lib/nested");
+  var extend = require("./lib/extend");
 
-  for (var key in obj) {
-      var val = obj[key];
+  var setNested = nested.setNested;
+  var getNested = nested.getNested;
+  var deleteNested = nested.deleteNested;
+  var objToPaths = nested.objToPaths;
 
-      if (val && (val.constructor === Object || val.constructor === Array) && !_.isEmpty(val)) {
-          //Recursion for embedded objects
-          var obj2 = objToPaths(val);
-
-          for (var key2 in obj2) {
-              var val2 = obj2[key2];
-
-              ret[key + separator + key2] = val2;
-          }
-      } else {
-          ret[key] = val;
-      }
-  }
-
-  return ret;
-}
-
-/**
- * @param {Object}  Object to fetch attribute from
- * @param {String}  Object path e.g. 'user.name'
- * @return {Mixed}
- */
-function getNested(obj, path, return_exists) {
-    var separator = ".";
-
-    if (!path) {
-      if (obj && obj.hasOwnProperty(path)) {
-        return obj[path];
-      } else {
-        return;
-      }
-    }
-
-    var fields = path !== undefined && path !== null ? (path + "").split(separator) : [];
-    var result = obj;
-    return_exists || (return_exists === false);
-    for (var i = 0, n = fields.length; i < n; i++) {
-        if (return_exists && !_.has(result, fields[i])) {
-            return false;
-        }
-        result = result[fields[i]];
-
-        if (result == null && i < n - 1) {
-            result = {};
-        }
-
-        if (typeof result === 'undefined') {
-            if (return_exists)
-            {
-                return true;
-            }
-            return result;
-        }
-    }
-    if (return_exists)
-    {
-        return true;
-    }
-    return result;
-}
-
- /**
- * @param {Object} obj                Object to fetch attribute from
- * @param {String} path               Object path e.g. 'user.name'
- * @param {Object} [options]          Options
- * @param {Boolean} [options.unset]   Whether to delete the value
- * @param {Mixed}                     Value to set
- */
-function setNested(obj, path, val, options) {
-    options = options || {};
-
-    var separator = keyPathSeparator;
-
-    var fields = path !== undefined && path !== null ? (path + "").split(separator) : [];
-    var result = obj;
-    for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
-        var field = fields[i];
-
-        //If the last in the path, set the value
-        if (i === n - 1) {
-            options.unset ? delete result[field] : result[field] = val;
-        } else {
-            //Create the child object if it doesn't exist, or isn't an object
-            if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
-                // if we're unsetting, no need to create objects deeper if
-                // we didn't find anything at the current level
-                if (options.unset) {
-                  return;
-                }
-
-                var nextField = fields[i+1];
-
-                // create array if next field is integer, else create object
-                result[field] = /^\d+$/.test(nextField) ? [] : {};
-            }
-
-            //Move onto the next part of the path
-            result = result[field];
-        }
-    }
-}
-
-function deleteNested(obj, path) {
-  setNested(obj, path, null, { unset: true });
-}
-
-
-// fully backbone compatible version Backbone.Model.extend(deep);
-// simpler version with a subset of features that does not depend on backbone Base.extend(deep) + Events.mixin(DeepModel.prototype)
-
-(function(root, factory) {
-
-  // Set up Backbone appropriately for the environment. Start with AMD.
-  if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'exports'], function(_, exports) {
-      // Export global even in AMD case in case this script is loaded with
-      // others that may still expect a global Backbone.
-      root.LeapModel = factory(root, exports, _);
-    });
-
-  // Next for Node.js or CommonJS.
-  } else if (typeof exports !== 'undefined') {
-    var _ = require('underscore');
-    factory(root, exports, _);
-
-  // Finally, as a browser global.
-  } else {
-    root.LeapModel = factory(root, {}, root._);
-  }
-
-}(this, function(root, LeapModel, _) {
+  var keyPathSeparator = ".";
 
   // Initial Setup
   // -------------
@@ -153,7 +21,7 @@ function deleteNested(obj, path) {
   var array = [];
   var slice = array.slice;
 
-  // Model
+  // LeapModel
   // --------------
 
   // Backbone **Models** are the basic data object in the framework --
@@ -163,7 +31,7 @@ function deleteNested(obj, path) {
 
   // Create a new model with the specified attributes. A client id (`cid`)
   // is automatically generated and assigned for you.
-  var Model = function(attributes, options) {
+  var LeapModel = function(attributes, options) {
     var defaults;
     var attrs = attributes || {};
     options || (options = {});
@@ -172,8 +40,8 @@ function deleteNested(obj, path) {
     if (options.collection) this.collection = options.collection;
     if (defaults = _.result(this, 'defaults')) {
         //<custom code>
-        // Replaced the call to _.defaults with _.deepExtend.
-        attrs = _.deepExtend({}, defaults, attrs);
+        // Replaced the call to _.defaults with __.deepExtend.
+        attrs = __.deepExtend({}, defaults, attrs);
         //</custom code>
     }
     this.set(attrs, options);
@@ -181,8 +49,8 @@ function deleteNested(obj, path) {
     this.initialize.apply(this, arguments);
   };
 
-  // Attach all inheritable methods to the Model prototype.
-  _.extend(Model.prototype, {
+  // Attach all inheritable methods to the LeapModel prototype.
+  _.extend(LeapModel.prototype, {
 
     // A hash of attributes whose current and previous value differ.
     changed: null,
@@ -200,13 +68,13 @@ function deleteNested(obj, path) {
 
     // Return a copy of the model's `attributes` object.
     toJSON: function(options) {
-      return _.deepClone(this.attributes);
+      return __.deepClone(this.attributes);
     },
 
     // Override get
     // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
     get: function(attr) {
-        return _.deepClone(getNested(this.attributes, attr));
+        return __.deepClone(getNested(this.attributes, attr));
     },
 
 
@@ -248,7 +116,7 @@ function deleteNested(obj, path) {
         this._changing  = true;
 
         if (!changing) {
-          this._previousAttributes = _.deepClone(this.attributes); //<custom>: Replaced _.clone with _.deepClone
+          this._previousAttributes = __.deepClone(this.attributes); //<custom>: Replaced _.clone with __.deepClone
           this.changed = {};
         }
         current = this.attributes, prev = this._previousAttributes;
@@ -388,7 +256,7 @@ function deleteNested(obj, path) {
     // Get all of the attributes of the model at the time of the previous
     // `"change"` event.
     previousAttributes: function() {
-      return _.deepClone(this._previousAttributes);
+      return __.deepClone(this._previousAttributes);
     },
 
     // Create a new model with identical attributes to this one.
@@ -419,50 +287,12 @@ function deleteNested(obj, path) {
 
   });
 
-  // Helpers
-  // -------
-
-  // Helper function to correctly set up the prototype chain, for subclasses.
-  // Similar to `goog.inherits`, but uses a hash of prototype properties and
-  // class properties to be extended.
-  var extend = function(protoProps, staticProps) {
-    var parent = this;
-    var child;
-
-    // The constructor function for the new subclass is either defined by you
-    // (the "constructor" property in your `extend` definition), or defaulted
-    // by us to simply call the parent's constructor.
-    if (protoProps && _.has(protoProps, 'constructor')) {
-      child = protoProps.constructor;
-    } else {
-      child = function(){ return parent.apply(this, arguments); };
-    }
-
-    // Add static properties to the constructor function, if supplied.
-    _.extend(child, parent, staticProps);
-
-    // Set the prototype chain to inherit from `parent`, without calling
-    // `parent`'s constructor function.
-    var Surrogate = function(){ this.constructor = child; };
-    Surrogate.prototype = parent.prototype;
-    child.prototype = new Surrogate;
-
-    // Add prototype properties (instance properties) to the subclass,
-    // if supplied.
-    if (protoProps) _.extend(child.prototype, protoProps);
-
-    // Set a convenience property in case the parent's prototype is needed
-    // later.
-    child.__super__ = parent.prototype;
-
-    return child;
-  };
-
-  BackboneEvents.mixin(Model.prototype);
+  BackboneEvents.mixin(LeapModel.prototype);
 
   // Set up inheritance for the model, collection, router, view and history.
-  Model.extend  = extend;
+  LeapModel.extend  = extend;
 
-  return Model;
+  return LeapModel;
 
-}));
+});
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

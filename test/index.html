@@ -15,15 +15,29 @@
   <script src="vendor/json2.js"></script>
   <script src="vendor/jquery.js"></script>
   <script src="vendor/qunit.js"></script>
-  <script src="vendor/underscore.js"></script>
+  <script src="../node_modules/requirejs/require.js"></script>
+  <script>
+    require.config({
+      paths: {
+        "backbone-events-standalone":
+          "../node_modules/backbone-events-standalone/backbone-events-standalone",
+        "underscore": "vendor/underscore"
 
+      }
+    });
+    require(["../leap-model"], function (LeapModel) {
+      window.LeapModel = LeapModel;
+      require(["model", "deep", "immutable"]);
+    })
+  </script>
+
+<!--   <script src="vendor/underscore.js"></script>
   <script src="../node_modules/backbone-events-standalone/backbone-events-standalone.js"></script>
-  
   <script src="../deep.helpers.js"></script>
   <script src="../leap-model.js"></script>
   
   <script src="model.js"></script>
   <script src="deep.js"></script>
-  <script src="immutable.js"></script>
+  <script src="immutable.js"></script> -->
 </body>
 </html>
