@@ -15,6 +15,8 @@
     }
 }(function(_, SuchModel) {
 
+    var keyPathSeparator = '.';
+
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -24,7 +26,7 @@
      */
     function objToPaths(obj) {
         var ret = {},
-            separator = DeepModel.keyPathSeparator;
+            separator = keyPathSeparator;
 
         for (var key in obj) {
             var val = obj[key];
@@ -52,7 +54,7 @@
      * @return {Mixed}
      */
     function getNested(obj, path, return_exists) {
-        var separator = DeepModel.keyPathSeparator;
+        var separator = keyPathSeparator;
 
         var fields = path ? path.split(separator) : [];
         var result = obj;
@@ -92,7 +94,7 @@
     function setNested(obj, path, val, options) {
         options = options || {};
 
-        var separator = DeepModel.keyPathSeparator;
+        var separator = keyPathSeparator;
 
         var fields = path ? path.split(separator) : [];
         var result = obj;
@@ -202,7 +204,7 @@
               if (changes.length) this._pending = true;
 
               //<custom code>
-              var separator = DeepModel.keyPathSeparator;
+              var separator = keyPathSeparator;
               var alreadyTriggered = {}; // * @restorer
 
               for (var i = 0, l = changes.length; i < l; i++) {
@@ -300,10 +302,6 @@
           //</custom code>
         }
     });
-
-
-    //Config; override in your app to customise
-    DeepModel.keyPathSeparator = '.';
 
 
     //Exports
