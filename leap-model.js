@@ -158,12 +158,18 @@ function deleteNested(obj, path) {
   // Create a new model with the specified attributes. A client id (`cid`)
   // is automatically generated and assigned for you.
   var Model = function(attributes, options) {
+    var defaults;
     var attrs = attributes || {};
     options || (options = {});
     this.cid = _.uniqueId('c');
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
-    attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
+    if (defaults = _.result(this, 'defaults')) {
+        //<custom code>
+        // Replaced the call to _.defaults with _.deepExtend.
+        attrs = _.deepExtend({}, defaults, attrs);
+        //</custom code>
+    }
     this.set(attrs, options);
     this.changed = {};
     this.initialize.apply(this, arguments);
