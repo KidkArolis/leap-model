@@ -3,16 +3,13 @@
  *
  * Based on https://gist.github.com/echong/3861963
  */
-(function(_, LeapModel) {
+(function(_) {
   var arrays, basicObjects, deepClone, deepExtend, deepExtendCouple, isBasicObject,
     __slice = [].slice;
 
   deepClone = function(obj) {
     var func, isArr;
     if (!_.isObject(obj) || _.isFunction(obj)) {
-      return obj;
-    }
-    if (obj instanceof LeapModel) {
       return obj;
     }
     if (_.isElement(obj)) {
@@ -109,4 +106,4 @@
     deepExtend: deepExtend
   });
 
-}).call(this, _, LeapModel);
+}).call(this, _);
