@@ -107,6 +107,10 @@
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
                 if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
+                    // we're unsetting, so no need to look deeper
+                    if (options.unset) {
+                      return;
+                    }
                     var nextField = fields[i+1];
 
                     // create array if next field is integer, else create object
