@@ -1,3 +1,115 @@
+var keyPathSeparator = '.';
+
+/**
+ * Takes a nested object and returns a shallow object keyed with the path names
+ * e.g. { "level1.level2": "value" }
+ *
+ * @param  {Object}      Nested object e.g. { level1: { level2: 'value' } }
+ * @return {Object}      Shallow object with path names e.g. { 'level1.level2': 'value' }
+ */
+function objToPaths(obj) {
+  var ret = {},
+      separator = keyPathSeparator;
+
+  for (var key in obj) {
+      var val = obj[key];
+
+      if (val && (val.constructor === Object || val.constructor === Array) && !_.isEmpty(val)) {
+          //Recursion for embedded objects
+          var obj2 = objToPaths(val);
+
+          for (var key2 in obj2) {
+              var val2 = obj2[key2];
+
+              ret[key + separator + key2] = val2;
+          }
+      } else {
+          ret[key] = val;
+      }
+  }
+
+  return ret;
+}
+
+/**
+ * @param {Object}  Object to fetch attribute from
+ * @param {String}  Object path e.g. 'user.name'
+ * @return {Mixed}
+ */
+function getNested(obj, path, return_exists) {
+    var separator = ".";
+
+    var fields = path ? path.split(separator) : [];
+    var result = obj;
+    return_exists || (return_exists === false);
+    for (var i = 0, n = fields.length; i < n; i++) {
+        if (return_exists && !_.has(result, fields[i])) {
+            return false;
+        }
+        result = result[fields[i]];
+
+        if (result == null && i < n - 1) {
+            result = {};
+        }
+
+        if (typeof result === 'undefined') {
+            if (return_exists)
+            {
+                return true;
+            }
+            return result;
+        }
+    }
+    if (return_exists)
+    {
+        return true;
+    }
+    return result;
+}
+
+ /**
+ * @param {Object} obj                Object to fetch attribute from
+ * @param {String} path               Object path e.g. 'user.name'
+ * @param {Object} [options]          Options
+ * @param {Boolean} [options.unset]   Whether to delete the value
+ * @param {Mixed}                     Value to set
+ */
+function setNested(obj, path, val, options) {
+    options = options || {};
+
+    var separator = keyPathSeparator;
+
+    var fields = path ? path.split(separator) : [];
+    var result = obj;
+    for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
+        var field = fields[i];
+
+        //If the last in the path, set the value
+        if (i === n - 1) {
+            options.unset ? delete result[field] : result[field] = val;
+        } else {
+            //Create the child object if it doesn't exist, or isn't an object
+            if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
+                var nextField = fields[i+1];
+
+                // create array if next field is integer, else create object
+                result[field] = /^\d+$/.test(nextField) ? [] : {};
+            }
+
+            //Move onto the next part of the path
+            result = result[field];
+        }
+    }
+}
+
+function deleteNested(obj, path) {
+  setNested(obj, path, null, { unset: true });
+}
+
+
+// fully backbone compatible version Backbone.Model.extend(deep);
+// simpler version with a subset of features that does not depend on backbone Base.extend(deep) + Events.mixin(DeepModel.prototype)
+
 (function(root, factory) {
 
   // Set up Backbone appropriately for the environment. Start with AMD.
@@ -166,10 +278,12 @@
       return this.set(attr, void 0, _.extend({}, options, {unset: true}));
     },
 
-    // Clear all attributes on the model, firing `"change"`.
+    // Clear all attributes on the model, firing `"change"` unless you choose
+    // to silence it.
     clear: function(options) {
       var attrs = {};
-      for (var key in this.attributes) attrs[key] = void 0;
+      var shallowAttributes = objToPaths(this.attributes);
+      for (var key in shallowAttributes) attrs[key] = void 0;
       return this.set(attrs, _.extend({}, options, {unset: true}));
     },
 
@@ -187,9 +301,18 @@
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
     changedAttributes: function(diff) {
-      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
-      var val, changed = false;
+      //<custom code>: objToPaths
+      if (!diff) return this.hasChanged() ? objToPaths(this.changed) : false;
+      //</custom code>
+
       var old = this._changing ? this._previousAttributes : this.attributes;
+
+      //<custom code>
+      diff = objToPaths(diff);
+      old = objToPaths(old);
+      //</custom code>
+
+      var val, changed = false;
       for (var attr in diff) {
         if (_.isEqual(old[attr], (val = diff[attr]))) continue;
         (changed || (changed = {}))[attr] = val;
@@ -283,42 +406,5 @@
   Model.extend  = extend;
 
   return Model;
-
-
-  /**
-   * @param {Object}  Object to fetch attribute from
-   * @param {String}  Object path e.g. 'user.name'
-   * @return {Mixed}
-   */
-  function getNested(obj, path, return_exists) {
-      var separator = ".";
-
-      var fields = path ? path.split(separator) : [];
-      var result = obj;
-      return_exists || (return_exists === false);
-      for (var i = 0, n = fields.length; i < n; i++) {
-          if (return_exists && !_.has(result, fields[i])) {
-              return false;
-          }
-          result = result[fields[i]];
-
-          if (result == null && i < n - 1) {
-              result = {};
-          }
-
-          if (typeof result === 'undefined') {
-              if (return_exists)
-              {
-                  return true;
-              }
-              return result;
-          }
-      }
-      if (return_exists)
-      {
-          return true;
-      }
-      return result;
-  }
 
 }));

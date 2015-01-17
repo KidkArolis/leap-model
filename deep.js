@@ -250,46 +250,13 @@
             return this;
         },
 
-        // Clear all attributes on the model, firing `"change"` unless you choose
-        // to silence it.
-        clear: function(options) {
-          var attrs = {};
-          var shallowAttributes = objToPaths(this.attributes);
-          for (var key in shallowAttributes) attrs[key] = void 0;
-          return this.set(attrs, _.extend({}, options, {unset: true}));
-        },
+
 
         // Determine if the model has changed since the last `"change"` event.
         // If you specify an attribute name, determine if that attribute has changed.
         hasChanged: function(attr) {
           if (attr == null) return !_.isEmpty(this.changed);
           return getNested(this.changed, attr) !== undefined;
-        },
-
-        // Return an object containing all the attributes that have changed, or
-        // false if there are no changed attributes. Useful for determining what
-        // parts of a view need to be updated and/or what attributes need to be
-        // persisted to the server. Unset attributes will be set to undefined.
-        // You can also pass an attributes object to diff against the model,
-        // determining if there *would be* a change.
-        changedAttributes: function(diff) {
-          //<custom code>: objToPaths
-          if (!diff) return this.hasChanged() ? objToPaths(this.changed) : false;
-          //</custom code>
-
-          var old = this._changing ? this._previousAttributes : this.attributes;
-
-          //<custom code>
-          diff = objToPaths(diff);
-          old = objToPaths(old);
-          //</custom code>
-
-          var val, changed = false;
-          for (var attr in diff) {
-            if (_.isEqual(old[attr], (val = diff[attr]))) continue;
-            (changed || (changed = {}))[attr] = val;
-          }
-          return changed;
         },
 
         // Get the previous value of an attribute, recorded at the time the last
