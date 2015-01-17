@@ -271,7 +271,7 @@ function deleteNested(obj, path) {
 
         // Trigger all relevant attribute changes.
         if (!silent) {
-          if (changes.length) this._pending = true;
+          if (changes.length) this._pending = options;
 
           //<custom code>
           var separator = keyPathSeparator;
@@ -311,6 +311,7 @@ function deleteNested(obj, path) {
         if (changing) return this;
         if (!silent) {
           while (this._pending) {
+            options = this._pending;
             this._pending = false;
             this.trigger('change', this, options);
           }
