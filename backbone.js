@@ -39,7 +39,14 @@ function objToPaths(obj) {
 function getNested(obj, path, return_exists) {
     var separator = ".";
 
-    var fields = path ? path.split(separator) : [];
+    if (!path) {
+      if (obj && obj.hasOwnProperty(path)) {
+        return obj[path];
+      } else {
+        return;
+      }
+    }
+
     var result = obj;
     return_exists || (return_exists === false);
     for (var i = 0, n = fields.length; i < n; i++) {
