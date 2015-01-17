@@ -1,6 +1,6 @@
 var Backbone = {};
-Backbone.Model = SuchModel;
-Backbone.DeepModel = SuchModel.DeepModel;
+Backbone.Model = LeapModel;
+Backbone.DeepModel = LeapModel;
 
 module("DeepModel");
 

@@ -56,7 +56,15 @@
     function getNested(obj, path, return_exists) {
         var separator = keyPathSeparator;
 
-        var fields = path ? path.split(separator) : [];
+        if (!path) {
+          if (obj && obj.hasOwnProperty(path)) {
+            return obj[path];
+          } else {
+            return;
+          }
+        }
+
+        var fields = path !== undefined && path !== null ? path.split(separator) : [];
         var result = obj;
         return_exists || (return_exists === false);
         for (var i = 0, n = fields.length; i < n; i++) {
@@ -96,7 +104,7 @@
 
         var separator = keyPathSeparator;
 
-        var fields = path ? path.split(separator) : [];
+        var fields = path !== undefined && path !== null ? path.split(separator) : [];
         var result = obj;
         for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
             var field = fields[i];
@@ -149,129 +157,13 @@
             this.initialize.apply(this, arguments);
         },
 
-        // Override set
-        // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
-        set: function(key, val, options) {
-            var attr, attrs, unset, changes, silent, changing, prev, current;
-            if (key == null) return this;
-
-            // Handle both `"key", value` and `{key: value}` -style arguments.
-            if (typeof key === 'object') {
-              attrs = key;
-              options = val || {};
-            } else {
-              (attrs = {})[key] = val;
-            }
-
-            options || (options = {});
-
-            // Run validation.
-            if (!this._validate(attrs, options)) return false;
-
-            // Extract attributes and options.
-            unset           = options.unset;
-            silent          = options.silent;
-            changes         = [];
-            changing        = this._changing;
-            this._changing  = true;
-
-            if (!changing) {
-              this._previousAttributes = _.deepClone(this.attributes); //<custom>: Replaced _.clone with _.deepClone
-              this.changed = {};
-            }
-            current = this.attributes, prev = this._previousAttributes;
-
-            // Check for changes of `id`.
-            if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
-
-            //<custom code>
-            attrs = objToPaths(attrs);
-            //</custom code>
-
-            // For each `set` attribute, update or delete the current value.
-            for (attr in attrs) {
-              val = attrs[attr];
-
-              //<custom code>: Using getNested, setNested and deleteNested
-              if (!_.isEqual(getNested(current, attr), val)) changes.push(attr);
-              if (!_.isEqual(getNested(prev, attr), val)) {
-                setNested(this.changed, attr, val);
-              } else {
-                deleteNested(this.changed, attr);
-              }
-              unset ? deleteNested(current, attr) : setNested(current, attr, val);
-              //</custom code>
-            }
-
-            // Trigger all relevant attribute changes.
-            if (!silent) {
-              if (changes.length) this._pending = true;
-
-              //<custom code>
-              var separator = keyPathSeparator;
-              var alreadyTriggered = {}; // * @restorer
-
-              for (var i = 0, l = changes.length; i < l; i++) {
-                var key = changes[i];
-
-                if (!alreadyTriggered.hasOwnProperty(key) || !alreadyTriggered[key]) { // * @restorer
-                  alreadyTriggered[key] = true; // * @restorer
-                  this.trigger('change:' + key, this, getNested(current, key), options);
-                } // * @restorer
-
-                var fields = key.split(separator);
-
-                //Trigger change events for parent keys with wildcard (*) notation
-                for(var n = fields.length - 1; n > 0; n--) {
-                  var parentKey = _.first(fields, n).join(separator),
-                      wildcardKey = parentKey + separator + '*';
-
-                  if (!alreadyTriggered.hasOwnProperty(wildcardKey) || !alreadyTriggered[wildcardKey]) { // * @restorer
-                    alreadyTriggered[wildcardKey] = true; // * @restorer
-                    this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
-                  } // * @restorer
-
-                  // + @restorer
-                  if (!alreadyTriggered.hasOwnProperty(parentKey) || !alreadyTriggered[parentKey]) {
-                    alreadyTriggered[parentKey] = true;
-                    this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
-                  }
-                  // - @restorer
-                }
-                //</custom code>
-              }
-            }
-
-            if (changing) return this;
-            if (!silent) {
-              while (this._pending) {
-                this._pending = false;
-                this.trigger('change', this, options);
-              }
-            }
-            this._pending = false;
-            this._changing = false;
-            return this;
-        },
+        
 
 
 
-        // Determine if the model has changed since the last `"change"` event.
-        // If you specify an attribute name, determine if that attribute has changed.
-        hasChanged: function(attr) {
-          if (attr == null) return !_.isEmpty(this.changed);
-          return getNested(this.changed, attr) !== undefined;
-        },
+        
 
-        // Get the previous value of an attribute, recorded at the time the last
-        // `"change"` event was fired.
-        previous: function(attr) {
-          if (attr == null || !this._previousAttributes) return null;
-
-          //<custom code>
-          return getNested(this._previousAttributes, attr);
-          //</custom code>
-        }
+        
     });
 
 

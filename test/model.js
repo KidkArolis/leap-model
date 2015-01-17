@@ -1,7 +1,7 @@
 (function() {
 
   var Backbone = {};
-  Backbone.Model = SuchModel.DeepModel;
+  Backbone.Model = LeapModel;
 
   var proxy = Backbone.Model.extend();
   var doc;

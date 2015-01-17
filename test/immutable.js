@@ -1,7 +1,7 @@
 module("Immutability");
 
 function create() {
-    var model = new SuchModel.DeepModel({
+    var model = new LeapModel({
         id: 123,
         user: {
             type: 'Spy',
