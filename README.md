@@ -1,29 +1,61 @@
-     ____                     __      __
-    /\  _`\                  /\ \    /\ \                                   __
-    \ \ \ \ \     __      ___\ \ \/'\\ \ \____    ___     ___      __      /\_\    ____
-     \ \  _ <'  /'__`\   /'___\ \ , < \ \ '__`\  / __`\ /' _ `\  /'__`\    \/\ \  /',__\
-      \ \ \ \ \/\ \ \.\_/\ \__/\ \ \\`\\ \ \ \ \/\ \ \ \/\ \/\ \/\  __/  __ \ \ \/\__, `\
-       \ \____/\ \__/.\_\ \____\\ \_\ \_\ \_,__/\ \____/\ \_\ \_\ \____\/\_\_\ \ \/\____/
-        \/___/  \/__/\/_/\/____/ \/_/\/_/\/___/  \/___/  \/_/\/_/\/____/\/_/\ \_\ \/___/
-                                                                           \ \____/
-                                                                            \/___/
-    (_'_______________________________________________________________________________'_)
-    (_.———————————————————————————————————————————————————————————————————————————————._)
+# leap-model
+
+This is a standalone model for storing complex application state.
+It has a subset of Backbone.Model functionality as well as supports nested objects.
+
+This is useful for when you don't need the whole Backbone and don't need the REST syncing stuff.
+Good for storing view state, etc. It allows storing arbitrary nested JSON.
+
+It can also be used to add nested attribute support to your Backbone Models.
+The code is taken from `backbone-deep-model` so you can also use that, the differences are:
+
+* get deepClones for immutability
+* unsetting bugfix
+* passes 100% of Backbone's tests
+* better AMD/CJS support - require("leap-model/backbone-model").extend()
+* does not have globals support (file an issue if you need it - we could add it in a separately built file)
+* does not allow modifying separator via a global attribute
+
+Example
+
+This version depends on the npm package `backbone-standalone-events`
+
+```js
+var LeapModel = require("leap-model");
+var m = LeapModel.extend({
+  foo: {
+    bar: 1
+  }
+});
+m.set("foo.bar", 2);
+m.get("foo"); // => {bar: 2}
+```
 
 
-Backbone supplies structure to JavaScript-heavy applications by providing models with key-value binding and custom events, collections with a rich API of enumerable functions, views with declarative event handling, and connects it all to your existing application over a RESTful JSON interface.
+It ships with a fully Backbone Model compatible version too.
+This version extends Backbone.Model and does not use `backbone-standalone-events`.
 
-For Docs, License, Tests, pre-packed downloads, and everything else, really, see:
-http://backbonejs.org
+```js
+var LeapModel = require("leap-model/backbone-model");
+var tasks = Backbone.Collection.extend({
+  model: LeapModel.extend({})
+});
+```
 
-To suggest a feature, report a bug, or general discussion:
-https://github.com/jashkenas/backbone/issues
+Third version - with subscribtions based event API (`event-kit`);
 
-Backbone is an open-sourced component of DocumentCloud:
-https://github.com/documentcloud
+## Caveats
 
-Many thanks to our contributors:
-https://github.com/jashkenas/backbone/graphs/contributors
+Currently there is one feature that's not fully compatible - defaults
 
-Special thanks to Robert Kieffer for the original philosophy behind Backbone.
-https://github.com/broofa
+```js
+var Defaulted = Backbone.Model.extend({
+  defaults: {
+    "one": 1,
+    "two": 2
+  }
+});
+var model = new Defaulted({two: undefined});
+equal(model.get('one'), 1);
+equal(model.get('two'), 2);
+```
