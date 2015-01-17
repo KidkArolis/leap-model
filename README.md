@@ -15,6 +15,7 @@ The code is taken from `backbone-deep-model` so you can also use that, the diffe
 * better AMD/CJS support - require("leap-model/backbone-model").extend()
 * does not have globals support (file an issue if you need it - we could add it in a separately built file)
 * does not allow modifying separator via a global attribute
+* does not pollute underscore with extra methods
 
 Example
 
