@@ -47,6 +47,7 @@ function getNested(obj, path, return_exists) {
       }
     }
 
+    var fields = path !== undefined && path !== null ? (path + "").split(separator) : [];
     var result = obj;
     return_exists || (return_exists === false);
     for (var i = 0, n = fields.length; i < n; i++) {
@@ -86,7 +87,7 @@ function setNested(obj, path, val, options) {
 
     var separator = keyPathSeparator;
 
-    var fields = path ? path.split(separator) : [];
+    var fields = path !== undefined && path !== null ? (path + "").split(separator) : [];
     var result = obj;
     for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
         var field = fields[i];
