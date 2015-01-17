@@ -117,7 +117,7 @@ function deleteNested(obj, path) {
     define(['underscore', 'exports'], function(_, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
-      root.SuchModel = factory(root, exports, _);
+      root.LeapModel = factory(root, exports, _);
     });
 
   // Next for Node.js or CommonJS.
@@ -127,10 +127,10 @@ function deleteNested(obj, path) {
 
   // Finally, as a browser global.
   } else {
-    root.SuchModel = factory(root, {}, root._);
+    root.LeapModel = factory(root, {}, root._);
   }
 
-}(this, function(root, SuchModel, _) {
+}(this, function(root, LeapModel, _) {
 
   // Initial Setup
   // -------------
