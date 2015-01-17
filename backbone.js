@@ -201,75 +201,109 @@ function deleteNested(obj, path) {
       return this.get(attr) != null;
     },
 
-    // Set a hash of model attributes on the object, firing `"change"`. This is
-    // the core primitive operation of a model, updating the data and notifying
-    // anyone who needs to know about the change in state. The heart of the beast.
+    // Override set
+    // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
     set: function(key, val, options) {
-      var attr, attrs, unset, changes, silent, changing, prev, current;
-      if (key == null) return this;
+        var attr, attrs, unset, changes, silent, changing, prev, current;
+        if (key == null) return this;
 
-      // Handle both `"key", value` and `{key: value}` -style arguments.
-      if (typeof key === 'object') {
-        attrs = key;
-        options = val;
-      } else {
-        (attrs = {})[key] = val;
-      }
-
-      options || (options = {});
-
-      // Run validation.
-      if (!this._validate(attrs, options)) return false;
-
-      // Extract attributes and options.
-      unset           = options.unset;
-      silent          = options.silent;
-      changes         = [];
-      changing        = this._changing;
-      this._changing  = true;
-
-      if (!changing) {
-        this._previousAttributes = _.clone(this.attributes);
-        this.changed = {};
-      }
-      current = this.attributes, prev = this._previousAttributes;
-
-      // Check for changes of `id`.
-      if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
-
-      // For each `set` attribute, update or delete the current value.
-      for (attr in attrs) {
-        val = attrs[attr];
-        if (!_.isEqual(current[attr], val)) changes.push(attr);
-        if (!_.isEqual(prev[attr], val)) {
-          this.changed[attr] = val;
+        // Handle both `"key", value` and `{key: value}` -style arguments.
+        if (typeof key === 'object') {
+          attrs = key;
+          options = val || {};
         } else {
-          delete this.changed[attr];
+          (attrs = {})[key] = val;
         }
-        unset ? delete current[attr] : current[attr] = val;
-      }
 
-      // Trigger all relevant attribute changes.
-      if (!silent) {
-        if (changes.length) this._pending = options;
-        for (var i = 0, length = changes.length; i < length; i++) {
-          this.trigger('change:' + changes[i], this, current[changes[i]], options);
-        }
-      }
+        options || (options = {});
 
-      // You might be wondering why there's a `while` loop here. Changes can
-      // be recursively nested within `"change"` events.
-      if (changing) return this;
-      if (!silent) {
-        while (this._pending) {
-          options = this._pending;
-          this._pending = false;
-          this.trigger('change', this, options);
+        // Run validation.
+        if (!this._validate(attrs, options)) return false;
+
+        // Extract attributes and options.
+        unset           = options.unset;
+        silent          = options.silent;
+        changes         = [];
+        changing        = this._changing;
+        this._changing  = true;
+
+        if (!changing) {
+          this._previousAttributes = _.deepClone(this.attributes); //<custom>: Replaced _.clone with _.deepClone
+          this.changed = {};
         }
-      }
-      this._pending = false;
-      this._changing = false;
-      return this;
+        current = this.attributes, prev = this._previousAttributes;
+
+        // Check for changes of `id`.
+        if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
+
+        //<custom code>
+        attrs = objToPaths(attrs);
+        //</custom code>
+
+        // For each `set` attribute, update or delete the current value.
+        for (attr in attrs) {
+          val = attrs[attr];
+
+          //<custom code>: Using getNested, setNested and deleteNested
+          if (!_.isEqual(getNested(current, attr), val)) changes.push(attr);
+          if (!_.isEqual(getNested(prev, attr), val)) {
+            setNested(this.changed, attr, val);
+          } else {
+            deleteNested(this.changed, attr);
+          }
+          unset ? deleteNested(current, attr) : setNested(current, attr, val);
+          //</custom code>
+        }
+
+        // Trigger all relevant attribute changes.
+        if (!silent) {
+          if (changes.length) this._pending = true;
+
+          //<custom code>
+          var separator = keyPathSeparator;
+          var alreadyTriggered = {}; // * @restorer
+
+          for (var i = 0, l = changes.length; i < l; i++) {
+            var key = changes[i];
+
+            if (!alreadyTriggered.hasOwnProperty(key) || !alreadyTriggered[key]) { // * @restorer
+              alreadyTriggered[key] = true; // * @restorer
+              this.trigger('change:' + key, this, getNested(current, key), options);
+            } // * @restorer
+
+            var fields = key.split(separator);
+
+            //Trigger change events for parent keys with wildcard (*) notation
+            for(var n = fields.length - 1; n > 0; n--) {
+              var parentKey = _.first(fields, n).join(separator),
+                  wildcardKey = parentKey + separator + '*';
+
+              if (!alreadyTriggered.hasOwnProperty(wildcardKey) || !alreadyTriggered[wildcardKey]) { // * @restorer
+                alreadyTriggered[wildcardKey] = true; // * @restorer
+                this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
+              } // * @restorer
+
+              // + @restorer
+              if (!alreadyTriggered.hasOwnProperty(parentKey) || !alreadyTriggered[parentKey]) {
+                alreadyTriggered[parentKey] = true;
+                this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
+              }
+              // - @restorer
+            }
+            //</custom code>
+          }
+        }
+
+        if (changing) return this;
+        if (!silent) {
+          while (this._pending) {
+            this._pending = false;
+            this.trigger('change', this, options);
+          }
+        }
+        this._pending = false;
+        this._changing = false;
+        return this;
     },
 
     // Remove an attribute from the model, firing `"change"`. `unset` is a noop
@@ -291,7 +325,7 @@ function deleteNested(obj, path) {
     // If you specify an attribute name, determine if that attribute has changed.
     hasChanged: function(attr) {
       if (attr == null) return !_.isEmpty(this.changed);
-      return _.has(this.changed, attr);
+      return getNested(this.changed, attr, true);
     },
 
     // Return an object containing all the attributes that have changed, or
@@ -324,7 +358,10 @@ function deleteNested(obj, path) {
     // `"change"` event was fired.
     previous: function(attr) {
       if (attr == null || !this._previousAttributes) return null;
-      return this._previousAttributes[attr];
+
+      //<custom code>
+      return getNested(this._previousAttributes, attr);
+      //</custom code>
     },
 
     // Get all of the attributes of the model at the time of the previous
