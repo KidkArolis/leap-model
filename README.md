@@ -44,3 +44,8 @@ var tasks = Backbone.Collection.extend({
 ```
 
 Third version - with subscribtions based event API (`event-kit`);
+
+# TODO
+
+- [ ] remove underscore usage
+- [ ] improve README
