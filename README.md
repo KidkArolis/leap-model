@@ -1,25 +1,28 @@
 # leap-model
 
-This is a standalone model for storing complex application state.
-It has a subset of Backbone.Model functionality as well as supports nested objects.
+A lightweight alternative to Backbone.Model with support for nested attributes.
 
-This is useful for when you don't need the whole Backbone and don't need the REST syncing stuff.
-Good for storing view state, etc. It allows storing arbitrary nested JSON.
+`leap-model` provides 2 different implementations depending on your needs:
 
-It can also be used to add nested attribute support to your Backbone Models.
-The code is taken from `backbone-deep-model` so you can also use that, the differences are:
+* a lightweight alternative to Backbone.Model with nested attributes support with no dependencies on Backbone or Underscore (`require('leap-model')`)
+* and a 100% Backbone compatible Model with nested attributes support (`require('leap-model/compat')`)
 
-* get deepClones for immutability
-* unsetting bugfix
+The first option is useful for when you don't need the whole Backbone and don't need the REST syncing parts of the model (save/fetch/sync/destroy). It's great for storing view state. Moreover, with the nested attribute support you can store arbitrary nested JSON.
+
+The second option is great if you're already using Backbone, but want nested attribute support. The code for that is based on [`backbone-deep-model`](https://github.com/powmedia/backbone-deep-model). LeapModel brings several advantages over `backbone-deep-model`
+
+* get deepClones attributes for more defensive defaults (the only way to muttate the model is by `setting` or modifying `attributes` directly)
 * passes 100% of Backbone's tests
-* better AMD/CJS support - require("leap-model/backbone-model").extend()
-* does not have globals support (file an issue if you need it - we could add it in a separately built file)
+* better AMD/CJS support - require("leap-model/compat").extend()
+* does not pollute globals (file an issue if you need it - we could add it in a separately built file)
 * does not allow modifying separator via a global attribute
 * does not pollute underscore with extra methods
+* does not depend on underscore at all
 
-Example
 
-This version depends on the npm package `backbone-standalone-events`
+## Example
+
+### leap-model
 
 ```js
 var LeapModel = require("leap-model");
@@ -32,18 +35,16 @@ m.set("foo.bar", 2);
 m.get("foo"); // => {bar: 2}
 ```
 
+### leap-model/compat
 
-It ships with a fully Backbone Model compatible version too.
 This version extends Backbone.Model and does not use `backbone-standalone-events`.
 
 ```js
-var LeapModel = require("leap-model/backbone-model");
+var LeapModelCompat = require("leap-model/compat");
 var tasks = Backbone.Collection.extend({
-  model: LeapModel.extend({})
+  model: LeapModelCompat.extend({})
 });
 ```
-
-Third version - with subscribtions based event API (`event-kit`);
 
 ## API
 
