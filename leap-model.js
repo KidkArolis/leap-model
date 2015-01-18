@@ -37,6 +37,7 @@ define(function (require) {
     options || (options = {});
     this.cid = _.uniqueId('c');
     this.attributes = {};
+    if (options.parse) attrs = this.parse(attrs, options) || {};
     if (options.collection) this.collection = options.collection;
     if (defaults = _.result(this, 'defaults')) {
         //<custom code>
