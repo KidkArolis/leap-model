@@ -44,19 +44,3 @@ var tasks = Backbone.Collection.extend({
 ```
 
 Third version - with subscribtions based event API (`event-kit`);
-
-## Caveats
-
-Currently there is one feature that's not fully compatible - defaults
-
-```js
-var Defaulted = Backbone.Model.extend({
-  defaults: {
-    "one": 1,
-    "two": 2
-  }
-});
-var model = new Defaulted({two: undefined});
-equal(model.get('one'), 1);
-equal(model.get('two'), 2);
-```

@@ -41,7 +41,7 @@ define(function (require) {
     if (defaults = _.result(this, 'defaults')) {
         //<custom code>
         // Replaced the call to _.defaults with __.deepExtend.
-        attrs = __.deepExtend({}, defaults, attrs);
+        attrs = __.deepExtend({}, defaults, __.deepClean(attrs));
         //</custom code>
     }
     this.set(attrs, options);
