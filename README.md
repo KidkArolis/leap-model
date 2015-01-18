@@ -45,6 +45,37 @@ var tasks = Backbone.Collection.extend({
 
 Third version - with subscribtions based event API (`event-kit`);
 
+## API
+
+LeapModel supports the following Backbone.Model methods
+
+```
+– extend
+– constructor / initialize
+– get
+– set
+– escape
+– has
+– unset
+– clear
+– id
+– idAttribute
+– cid
+– attributes
+– changed
+– defaults
+– toJSON
+– validate
+– validationError
+– isValid
+– clone
+– isNew
+– hasChanged
+– changedAttributes
+– previous
+– previousAttributes
+```
+
 # TODO
 
 - [ ] remove underscore usage
