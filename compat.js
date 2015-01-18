@@ -1,8 +1,8 @@
 (function (define) { 'use strict';
-define(function (require) {
+define(function (require) { // jshint ignore:line
 
-  var LeapModel = require("./leap-model");
-  var Backbone = require("backbone");
+  var LeapModel = require('./leap-model');
+  var Backbone = require('backbone');
 
   var Model = Backbone.Model.extend(LeapModel.prototype);
 

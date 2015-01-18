@@ -1,25 +1,18 @@
 (function (define) { 'use strict';
-define(function (require) {
+define(function (require) { // jshint ignore:line
 
-  var BackboneEvents = require("backbone-events-standalone");
-  var _ = require("underscore");
-  var __ = require("./lib/deep-helpers");
-  var nested = require("./lib/nested");
-  var extend = require("./lib/extend");
+  var BackboneEvents = require('backbone-events-standalone');
+  var _ = require('underscore');
+  var __ = require('./lib/deep-helpers');
+  var nested = require('./lib/nested');
+  var extend = require('./lib/extend');
 
   var setNested = nested.setNested;
   var getNested = nested.getNested;
   var deleteNested = nested.deleteNested;
   var objToPaths = nested.objToPaths;
 
-  var keyPathSeparator = ".";
-
-  // Initial Setup
-  // -------------
-
-  // Create local references to array methods we'll want to use later.
-  var array = [];
-  var slice = array.slice;
+  var keyPathSeparator = '.';
 
   // LeapModel
   // --------------
@@ -39,11 +32,11 @@ define(function (require) {
     this.attributes = {};
     if (options.parse) attrs = this.parse(attrs, options) || {};
     if (options.collection) this.collection = options.collection;
-    if (defaults = _.result(this, 'defaults')) {
-        //<custom code>
+    if ((defaults = _.result(this, 'defaults'))) {
+        // <custom code>
         // Replaced the call to _.defaults with __.deepExtend.
         attrs = __.deepExtend({}, defaults, __.deepClean(attrs));
-        //</custom code>
+        // </custom code>
     }
     this.set(attrs, options);
     this.changed = {};
@@ -65,10 +58,10 @@ define(function (require) {
 
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
-    initialize: function(){},
+    initialize: function () {},
 
     // Return a copy of the model's `attributes` object.
-    toJSON: function(options) {
+    toJSON: function() {
       return __.deepClone(this.attributes);
     },
 
@@ -77,7 +70,6 @@ define(function (require) {
     get: function(attr) {
         return __.deepClone(getNested(this.attributes, attr));
     },
-
 
     // Get the HTML-escaped value of an attribute.
     escape: function(attr) {
@@ -117,7 +109,8 @@ define(function (require) {
         this._changing  = true;
 
         if (!changing) {
-          this._previousAttributes = __.deepClone(this.attributes); //<custom>: Replaced _.clone with __.deepClone
+          // <custom>: Replaced _.clone with __.deepClone
+          this._previousAttributes = __.deepClone(this.attributes);
           this.changed = {};
         }
         current = this.attributes, prev = this._previousAttributes;
@@ -125,15 +118,15 @@ define(function (require) {
         // Check for changes of `id`.
         if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
 
-        //<custom code>
+        // <custom code>
         attrs = objToPaths(attrs);
-        //</custom code>
+        // </custom code>
 
         // For each `set` attribute, update or delete the current value.
-        for (attr in attrs) {
+        for (attr in attrs) { // jshint ignore: line
           val = attrs[attr];
 
-          //<custom code>: Using getNested, setNested and deleteNested
+          // <custom code>: Using getNested, setNested and deleteNested
           if (!_.isEqual(getNested(current, attr), val)) changes.push(attr);
           if (!_.isEqual(getNested(prev, attr), val)) {
             setNested(this.changed, attr, val);
@@ -141,19 +134,19 @@ define(function (require) {
             deleteNested(this.changed, attr);
           }
           unset ? deleteNested(current, attr) : setNested(current, attr, val);
-          //</custom code>
+          // </custom code>
         }
 
         // Trigger all relevant attribute changes.
         if (!silent) {
           if (changes.length) this._pending = options;
 
-          //<custom code>
+          // <custom code>
           var separator = keyPathSeparator;
           var alreadyTriggered = {}; // * @restorer
 
           for (var i = 0, l = changes.length; i < l; i++) {
-            var key = changes[i];
+            var key = changes[i]; // jshint ignore: line
 
             if (!alreadyTriggered.hasOwnProperty(key) || !alreadyTriggered[key]) { // * @restorer
               alreadyTriggered[key] = true; // * @restorer
@@ -162,8 +155,8 @@ define(function (require) {
 
             var fields = key.split(separator);
 
-            //Trigger change events for parent keys with wildcard (*) notation
-            for(var n = fields.length - 1; n > 0; n--) {
+            // Trigger change events for parent keys with wildcard (*) notation
+            for (var n = fields.length - 1; n > 0; n--) {
               var parentKey = _.first(fields, n).join(separator),
                   wildcardKey = parentKey + separator + '*';
 
@@ -179,7 +172,7 @@ define(function (require) {
               }
               // - @restorer
             }
-            //</custom code>
+            // </custom code>
           }
         }
 
@@ -207,7 +200,11 @@ define(function (require) {
     clear: function(options) {
       var attrs = {};
       var shallowAttributes = objToPaths(this.attributes);
-      for (var key in shallowAttributes) attrs[key] = void 0;
+      for (var key in shallowAttributes) {
+        if (shallowAttributes.hasOwnProperty(key)) {
+          attrs[key] = void 0;
+        }
+      }
       return this.set(attrs, _.extend({}, options, {unset: true}));
     },
 
@@ -225,21 +222,23 @@ define(function (require) {
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
     changedAttributes: function(diff) {
-      //<custom code>: objToPaths
+      // <custom code>: objToPaths
       if (!diff) return this.hasChanged() ? objToPaths(this.changed) : false;
-      //</custom code>
+      // </custom code>
 
       var old = this._changing ? this._previousAttributes : this.attributes;
 
-      //<custom code>
+      // <custom code>
       diff = objToPaths(diff);
       old = objToPaths(old);
-      //</custom code>
+      // </custom code>
 
       var val, changed = false;
       for (var attr in diff) {
-        if (_.isEqual(old[attr], (val = diff[attr]))) continue;
-        (changed || (changed = {}))[attr] = val;
+        if (diff.hasOwnProperty(attr)) {
+          if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+          (changed || (changed = {}))[attr] = val;
+        }
       }
       return changed;
     },
@@ -249,9 +248,9 @@ define(function (require) {
     previous: function(attr) {
       if (attr == null || !this._previousAttributes) return null;
 
-      //<custom code>
+      // <custom code>
       return getNested(this._previousAttributes, attr);
-      //</custom code>
+      // </custom code>
     },
 
     // Get all of the attributes of the model at the time of the previous
