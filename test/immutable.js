@@ -1,4 +1,4 @@
-module("Immutability");
+module("LeapModel (Immutable)");
 
 function create() {
     var model = new LeapModel({

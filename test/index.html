@@ -17,27 +17,47 @@
   <script src="vendor/qunit.js"></script>
   <script src="../node_modules/requirejs/require.js"></script>
   <script>
+    // Tests are loaded async, so wait for them
+    // to load before starting.
+    QUnit.config.autostart = false;
+
     require.config({
       paths: {
         "backbone-events-standalone":
           "../node_modules/backbone-events-standalone/backbone-events-standalone",
-        "underscore": "vendor/underscore"
-
+        "underscore": "vendor/underscore",
+        "backbone": "backbone-compatibility/backbone",
+        "jquery": "vendor/jquery"
       }
     });
-    require(["../leap-model"], function (LeapModel) {
+
+    require(["backbone", "../leap-model", "../compat"], function (Backbone, LeapModel, LeapModelCompat) {
+      // replace the BackboneModel with LeapModel/compat
+      Backbone.Model = LeapModelCompat;
+
+      // attach LeapModel to window since that where the tests expect it
       window.LeapModel = LeapModel;
-      require(["model", "deep", "immutable"]);
+
+      // load all of the tests
+      require([
+        // subset of backbone model tests for LeapModel
+        "leap",
+        // original backbone-deep-model tests
+        "deep",
+        // some extra tests testing immutability of models
+        "immutable",
+        // backbone compatibility tests, here we run 100% of Backbone's
+        // original tests against leap-model/compat model
+        "./backbone-compatibility/test/environment",
+        "./backbone-compatibility/test/noconflict",
+        "./backbone-compatibility/test/events",
+        "./backbone-compatibility/test/model",
+        "./backbone-compatibility/test/collection",
+        "./backbone-compatibility/test/router",
+        "./backbone-compatibility/test/view",
+        "./backbone-compatibility/test/sync"
+      ], QUnit.start);
     })
   </script>
-
-<!--   <script src="vendor/underscore.js"></script>
-  <script src="../node_modules/backbone-events-standalone/backbone-events-standalone.js"></script>
-  <script src="../deep.helpers.js"></script>
-  <script src="../leap-model.js"></script>
-  
-  <script src="model.js"></script>
-  <script src="deep.js"></script>
-  <script src="immutable.js"></script> -->
 </body>
 </html>
