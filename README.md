@@ -24,6 +24,8 @@ The second option is great if you're already using Backbone, but want nested att
 
 ### leap-model
 
+This version does not depend on Backbone or Underscore. It depends on `backbone-standalone-events`.
+
 ```js
 var LeapModel = require("leap-model");
 var m = LeapModel.extend({
