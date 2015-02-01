@@ -2,8 +2,18 @@
 define(function (require) { // jshint ignore:line
 
   var BackboneEvents = require('backbone-events-standalone');
-  var LeapBase = require('./lib/leap-base');
   var leapMethods = require('./lib/leap-methods');
+  var extend = require('./lib/extend');
+
+  // LeapBase
+  // --------
+  //
+  // LeapBase helps with separating leapMethods into it's own module.
+  // We extend Backbone.Model with leapMethods to get LeapModelCompat
+  // and extend LeapBase with leapMethods to get LeapModel.
+
+  var LeapBase = function() {};
+  LeapBase.extend = extend;
 
   // LeapModel
   // ---------
