@@ -1,7 +1,7 @@
 {
-  "name": "such-model",
+  "name": "leap-model",
   "version": "1.0.0",
-  "description": "A Backbone inspired (and semi compatible) model",
+  "description": "A lightweight Backbone inspired model with nested attribute support. Plus a Backbone compatible version.",
   "url": "http://backbonejs.org",
   "keywords": [
     "model",
@@ -23,7 +23,7 @@
     "phantomjs": "1.9.7-8",
     "requirejs": "^2.1.15"
   },
-  "main": "deep.js",
+  "main": "leap-model.js",
   "scripts": {
     "test": "phantomjs test/vendor/runner.js test/index.html?noglobals=true",
     "lint": "jsl -nofilelisting -nologo -conf docs/jsl.conf -process backbone.js"
@@ -31,6 +31,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KidkArolis/such-model.git"
+    "url": "https://github.com/KidkArolis/leap-model.git"
   }
 }
