@@ -1,7 +1,7 @@
 module("LeapModel (Immutable)");
 
-function create() {
-  var model = new LeapModel({
+function create(attrs) {
+  var model = new LeapModel(attrs || {
     id: 123,
     user: {
       type: 'Spy',
@@ -64,6 +64,32 @@ test("set: deep clones attributes before setting to the model", function() {
       first: 'Lana',
       last: 'Kane'
     }
+  });
+});
+
+test("set: deep clones the empty objects", function () {
+  var model = create({});
+
+  // create a model with a set of attributes,
+  // one of which is an empty object
+  var attrs = {
+    type: 'Agent',
+    name: {}
+  };
+  model.set(attrs);
+  // modify it
+  model.set('name.first', 'Lana');
+  deepEqual(model.toJSON(), {
+    type: 'Agent',
+    name: {
+      first: 'Lana'
+    }
+  });
+
+  // the original object should not have been modified
+  deepEqual(attrs, {
+    type: 'Agent',
+    name: {}
   });
 });
 
